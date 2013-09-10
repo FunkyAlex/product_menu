@@ -1,0 +1,68 @@
+div.header
+{
+	height: 30px;
+	width: 100%;
+}
+div.header2
+{
+	height: 20px;
+	width: 100%;
+}
+div.primaryLevelDescripion p
+{
+	display: block;
+}
+div.image
+{
+	height: 150px;
+	width: 150px;
+	float: right;
+	margin: 5px;
+}
+div.subLevelHeader
+{
+	width: 100%;
+	height: 20px;
+}
+div.subLevelHeaderTitle
+{
+	margin-left: 20px;
+	float:left;
+	height: 20px;
+	width: 65%;
+}
+div.subLevelHeaderFile 
+{
+	height: 14px;
+	width: 170px;
+	float: right;
+}
+.fileLink
+{
+	float:right;
+	text-decoration:none;
+}
+ul
+{
+	list-style-image:url('http://217.149.52.8/~haaga279/sites/default/files/field/image/greenSquare.png');
+{
+list-style-image:url('sqpurple.gif');
+}
+}
+.fileLink:hover
+{
+	color:red;
+}
+.subLevelHeaderFile img
+{
+	float:left;
+}
+.subLevelPicture
+{
+	float:right;
+	margin: 2px 5px 10px 10px;
+}
+.subLevelContent
+{
+	
+}

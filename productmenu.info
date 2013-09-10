@@ -1,0 +1,8 @@
+
+name = "Haaga Helia Product Menu"
+description = "Displays product information and related pictures and links in a collapsible menu block"
+
+core = 7.x
+dependencies[] = block
+
+configure = admin/config/user-interface/haaga-helia-product_menu

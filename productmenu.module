@@ -1,0 +1,287 @@
+<?php
+//-----------------------------------------------------------------------------------------------------------------
+function productmenu_block_info() {
+
+  // tells drupal about the block or blocks to create.
+
+  	$blocks['productmenu'] = array(
+    		'info' => t('product menu'),
+    		'title' => t('product menu'),
+    		'cache' => DRUPAL_NO_CACHE,
+    		'status' => TRUE,
+    		'region' => 'content'
+  );
+  return $blocks;
+}
+//------------------------------------------------------------------------------------------------------------------
+function productmenu_css_alter(&$css) {
+
+  // Remove default jquery UI theme .css files.
+
+  	//unset($css[ 'misc/ui/jquery.ui.accordion.css']);
+	//unset($css[ 'misc/ui/jquery.ui.theme.css']);
+
+}
+//------------------------------------------------------------------------------------------------------------------
+function productmenu_block_view($delta) {
+
+ // implements the rendering of the block html
+ 	$uri = 'public://';
+	$publicPath= file_create_url($uri);
+
+	drupal_add_library('system', 'ui.accordion');
+
+	// adds customized jquery ui themes css 
+        drupal_add_css('misc/ui/subLevel/jquery-ui-1.10.3.customsub.css','file');
+	drupal_add_css('misc/ui/primaryLevel/jquery-ui-1.10.3.custom.css','file');
+	// adds blocks own css file
+	drupal_add_css(drupal_get_path('module', 'productmenu') . '/productmenu.css','file');
+
+	$block = array();
+	$block['content'] = '
+	   <div id="accordion" class="primaryLevel"><!--PRODUCT MENU STARTS HERE----------------------------------------------------------------------------------------------->';
+	   
+	   for ($i = 1; $i <= variable_get('productmenu_primaryitems', 3) ; $i++) {
+	   
+	   	if(variable_get('pi'.$i.'_title', t('')) != "")
+	   	{
+               		$block['content'] .='
+               		<h3 class="header primaryLevel">
+                   		<a href="">'.variable_get('pi'.$i.'_title', t('')).'</a>
+               		</h3>
+               		<div class="primaryLevel contentItem ">';
+               		if(variable_get('pi'.$i.'_description', t('')) != "")
+	   		{
+                    		$block['content'] .='
+                    		<div class="primaryLevelDescripion">
+                    			'.variable_get('pi'.$i.'_description', t('')).'
+                   		</div>';
+                   	}
+                   	
+                   	$block['content'] .='
+		     		<div id="accordion2" class=" accordion2 subLevel">';
+                   	for ($ii = 1; $ii <= variable_get('pi'.$i.'_numberofsecondaryitems', 3) ; $ii++) {
+                   		
+                   		if(variable_get('pi'.$i.'_sb'.$ii.'_title', t(''))!= "")
+                   		{
+                   			$block['content'] .='
+					<div class="subLevel header2 ">
+						<div class="subLevelHeader">
+							<div class="subLevelHeaderTitle">
+								<p>
+	                         	  		  	'.variable_get('pi'.$i.'_sb'.$ii.'_title', t('')).'
+	                       					</p>	
+							</div>';
+						if(variable_get('pi'.$i.'_sb'.$ii.'_fileupload', t('')) != "")
+						{
+							$docpath = file_load(variable_get('pi'.$i.'_sb'.$ii.'_fileupload', t('')))->uri;
+							$docurl = str_replace("public://", $publicPath, $docpath);
+							$block['content'] .='
+                       					<div class="subLevelHeaderFile">
+                       				  		<a  style="padding: 0em 0em 0em 0em" class="fileLink" target="_blank" href="'.$docurl.'"><img class="" src="' . drupal_get_path('module', 'productmenu') . '/images/download.png" alt="pdf" /> &nbsp;Download brochure</a>	
+                       					</div>';
+                       				}
+					$block['content'] .='	
+						</div>
+                   			</div>';
+                   			if(variable_get('pi'.$i.'_sb'.$ii.'_description', t('')) != "")
+                   			{
+                   			$block['content'] .='
+					<div class="subLevel contentItem">
+				      		<p class="subLevelContent">';
+				      			if (variable_get('pi'.$i.'_sb'.$ii.'_imageupload', t('')) != "")
+				      			{
+				      			$imgpath = file_load(variable_get('pi'.$i.'_sb'.$ii.'_imageupload', t('')))->uri;
+							$imgurl = str_replace("public://", $publicPath, $imgpath);
+				      			$block['content'] .='<img class="subLevelPicture" src="' . $imgurl  . '" alt="team member" />';
+							}
+						$block['content'] .= variable_get('pi'.$i.'_sb'.$ii.'_description', t('')).'
+						</p>
+					</div>';
+					}
+					else
+					{
+						$block['content'] .='
+						<div class="subLevel contentItem"></div>';
+
+					}
+					
+				}
+			}
+			$block['content'] .=' 
+		   			 </div>';
+		    
+                 $block['content'] .=' 
+               </div>';
+               }
+               }
+               
+	$block['content'] .= '</div>';
+
+// $imgpath = file_load($ifid)->uri;
+//	image_resize(stdClass $image, $width, $height) to resize
+	drupal_add_js(drupal_get_path('module', 'productmenu') . '/productmenu.js','file');
+	//$js = "jQuery(function(){ jQuery('#accordion').accordion({ event: 'mouseover', autoHeight: false, active: 100, heightStyle: 'content'}); });";
+	//drupal_add_js($js,'inline');
+
+
+  return $block;
+}
+//------------------------------------------------------------------------------------------------------------------
+function productmenu_block_configure($delta) {
+
+  // Implements block configuration screen.
+
+  $form = array();
+
+	$form['productmenu_primaryitems'] = array(
+		'#type' => 'select',
+		'#title' => t('number of primary product menu items available'),
+		'#default_value' => variable_get('productmenu_primaryitems', 3),
+		'#options' => drupal_map_assoc(array(2, 3, 4, 5, 6, 7, 8, 9, 10)),
+	);
+
+	for ($i = 1; $i <= variable_get('productmenu_primaryitems', 3) ; $i++) {
+		if(variable_get('pi'.$i.'_title')!= ""){
+			$title = ' - '.variable_get('pi'.$i.'_title');
+		}
+		else{
+			$title = '';
+		}
+   		$form['primary_item'.$i] = array(
+   			'#type' 	=> 'fieldset',
+			'#title' 	=> 'primary product item '.$i.$title,
+			'#weight' 	=> $i,                                                            
+			'#collapsible' 	=> TRUE,
+			'#collapsed' 	=> TRUE,
+			);
+		$form['primary_item'.$i]['pi'.$i.'_title'] = array(
+			'#type' 	=> 'textfield',
+			'#title' 	=> 'title',
+			'#maxlength' => 100, 
+			'#default_value'=> variable_get('pi'.$i.'_title', t(''))
+			);
+		$form['primary_item'.$i]['pi'.$i.'_description'] = array(
+			'#type' 	=> 'text_format',
+			'#title' 	=> 'description',
+			'#rows' 	=> 5,
+			'#default_value'=> variable_get('pi'.$i.'_description', t(''))
+			);
+		$form['primary_item'.$i]['pi'.$i.'_numberofsecondaryitems'] = array(
+			'#type' 	=> 'select',
+			'#title' 	=> t('number of sub product items available'),
+			'#default_value'=> variable_get('pi'.$i.'_numberofsecondaryitems', 3),
+			'#options' 	=> drupal_map_assoc(array(2, 3, 4, 5, 6, 7, 8, 9, 10)),
+			);
+		for ($ii = 1; $ii <= variable_get('pi'.$i.'_numberofsecondaryitems', 3) ; $ii++) {
+			if(variable_get('pi'.$i.'_sb'.$ii.'_title')!= ""){
+				$subtitle = ' - '.variable_get('pi'.$i.'_sb'.$ii.'_title');
+			}
+			else{
+				$subtitle = '';
+			}
+			$form['primary_item'.$i]['secondary_item'.$ii] = array(
+   				'#type' 	=> 'fieldset',
+				'#title' 	=> 'sub product item '.$ii.$subtitle,
+				'#weight' 	=> $ii,                                                            
+				'#collapsible' 	=> TRUE,
+				'#collapsed' 	=> TRUE,
+				);
+			$form['primary_item'.$i]['secondary_item'.$ii]['pi'.$i.'_sb'.$ii.'_title'] = array(
+				'#type' 	=> 'textfield',
+				'#title' 	=> 'title',
+				'#maxlength' => 70, 
+				'#default_value'=> variable_get('pi'.$i.'_sb'.$ii.'_title', t(''))
+				);
+			$form['primary_item'.$i]['secondary_item'.$ii]['pi'.$i.'_sb'.$ii.'_description'] = array(
+				'#type' 	=> 'text_format',
+				'#title' 	=> 'description',
+				'#rows' 	=> 5,
+				'#default_value'=> variable_get('pi'.$i.'_sb'.$ii.'_description', t(''))
+				);	
+			$form['primary_item'.$i]['secondary_item'.$ii]['pi'.$i.'_sb'.$ii.'_fileupload'] = array(
+				'#type' 		=> 'managed_file',
+				'#title' 		=> 'upload pdf file',
+				'#description' 		=> 'pdf files uploaded will be displayed as links to download in sub-level headers', 
+				'#upload_location'    	=> 'public://',
+     				'#upload_validators'  	=> array("file_validate_extensions" => array('pdf')),
+     				'#default_value'	=>  variable_get('pi'.$i.'_sb'.$ii.'_fileupload', t('')),
+     				);
+     			$form['primary_item'.$i]['secondary_item'.$ii]['pi'.$i.'_sb'.$ii.'_imageupload'] = array(
+				'#type' 		=> 'managed_file',
+				'#title' 		=> 'upload image file',
+				'#description' 		=> 'Image files uploaded will be displayed on the right of description text. Image size should not 	   exceed 200px * 200px  ', 
+				'#upload_location'    	=> 'public://',
+     				'#upload_validators'  	=> array("file_validate_extensions" => array('gif png jpg jpeg'),
+     								 "file_validate_size"       => array(1 * 250 * 250)),
+     				'#default_value'	=>  variable_get('pi'.$i.'_sb'.$ii.'_imageupload', t('')),				 	
+     				);
+		}
+		
+	}      	 
+
+  return $form;
+}
+//------------------------------------------------------------------------------------------------------------------
+function productmenu_block_save($delta, $edit) {
+
+	//saves form variables from the config page to the database	
+echo "func1";
+  if (!empty($delta)) {
+
+        // Save the block configuration settings.
+     		 
+     		
+   //   variable_set('pi1_title', $edit['pi1_title']);
+     
+     for ($i = 1; $i <= variable_get('productmenu_primaryitems', 3) ; $i++) {
+     
+     	variable_set('pi'.$i.'_title', $edit['pi'.$i.'_title']);
+     	variable_set('pi'.$i.'_description', $edit['pi'.$i.'_description']['value']);
+     	
+     	
+     		 for ($ii = 1; $ii <= variable_get('pi'.$i.'_numberofsecondaryitems', 3) ; $ii++) {
+     		 
+     		 	variable_set('pi'.$i.'_sb'.$ii.'_title', $edit['pi'.$i.'_sb'.$ii.'_title']);
+     			variable_set('pi'.$i.'_sb'.$ii.'_description', $edit['pi'.$i.'_sb'.$ii.'_description']['value']);
+     			variable_set('pi'.$i.'_sb'.$ii.'_fileupload', $edit['pi'.$i.'_sb'.$ii.'_fileupload']);
+     			variable_set('pi'.$i.'_sb'.$ii.'_imageupload', $edit['pi'.$i.'_sb'.$ii.'_imageupload']);
+     		echo "beforefunc";
+  			$file = file_load($edit['pi'.$i.'_sb'.$ii.'_fileupload']);
+  			if ($file)
+  			{
+  				echo "filefunc";
+  				$file->status = FILE_STATUS_PERMANENT;
+  				file_save($file);
+ 				 // Record that the module (in this example, user module) is using the file.
+  				$block = block_load('productmenu', $delta);
+      				file_usage_add($file, 'productmenu', 'block', $block->bid);
+  			}
+  			
+  			$img = file_load($edit['pi'.$i.'_sb'.$ii.'_imageupload']);
+  			if ($img)
+  			{
+  			echo "imgfunc";
+  				$img->status = FILE_STATUS_PERMANENT;
+  				file_save($img);
+ 				 // Record that the module (in this example, user module) is using the file. 
+  				$block = block_load('productmenu', $delta);
+      				file_usage_add($img, 'productmenu', 'block', $block->bid);
+  			}
+     		  variable_set('pi'.$i.'_numberofsecondaryitems', $edit['pi'.$i.'_numberofsecondaryitems']);
+     		 }
+     		 
+
+     }
+     variable_set('productmenu_primaryitems', $edit['productmenu_primaryitems']);
+
+    
+  }
+}
+
+
+
+
+	        
+	   
+   	   
